@@ -1,0 +1,28 @@
+import { Roboto } from "next/font/google";
+import "./globals.css";
+import AuthSessionProvider from "@/components/providers/session-provider";
+import { AntdRegistry } from "@ant-design/nextjs-registry";
+
+const roboto = Roboto({
+  variable: "--font-roboto",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "700"],
+});
+
+export const metadata = {
+  title: "Emergency Dashboard",
+  description:
+    "Emergency Dashboard for monitoring and managing emergency situations",
+};
+
+export default function RootLayout({ children }) {
+  return (
+    <html lang="en" className={`${roboto.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col">
+        <AntdRegistry>
+          <AuthSessionProvider>{children}</AuthSessionProvider>
+        </AntdRegistry>
+      </body>
+    </html>
+  );
+}

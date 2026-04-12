@@ -10,9 +10,9 @@ const roboto = Roboto({
 });
 
 export const metadata = {
-  title: "Emergency Dashboard",
+  title: "Alerta - Emergency Dashboard",
   description:
-    "Emergency Dashboard for monitoring and managing emergency situations",
+    "Alerta - Emergency Dashboard for monitoring and managing emergency situations",
 };
 
 export default function RootLayout({ children }) {

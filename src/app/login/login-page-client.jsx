@@ -44,7 +44,7 @@ export default function LoginPageClient() {
           <Title level={2} className="!mb-1">
             Admin Login
           </Title>
-          <Text type="secondary">Sign in to emergency dashboard</Text>
+          <Text type="secondary">Sign in to Alerta - Emergency Dashboard</Text>
         </div>
 
         {errorMessage ? (

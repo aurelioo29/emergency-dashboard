@@ -3,12 +3,14 @@ import { apiFetch } from "@/lib/api";
 import DispatchesTable from "@/components/dispatches/dispatches-table";
 
 async function DispatchesContent({ searchParams }) {
-  const page = searchParams?.page || "1";
-  const limit = searchParams?.limit || "10";
-  const dispatchStatus = searchParams?.dispatchStatus || "";
-  const reportId = searchParams?.reportId || "";
-  const officerId = searchParams?.officerId || "";
-  const ambulanceId = searchParams?.ambulanceId || "";
+  const resolvedSearchParams = await searchParams;
+  
+  const page = resolvedSearchParams?.page || "1";
+  const limit = resolvedSearchParams?.limit || "10";
+  const dispatchStatus = resolvedSearchParams?.dispatchStatus || "";
+  const reportId = resolvedSearchParams?.reportId || "";
+  const officerId = resolvedSearchParams?.officerId || "";
+  const ambulanceId = resolvedSearchParams?.ambulanceId || "";
 
   const query = new URLSearchParams({
     page,

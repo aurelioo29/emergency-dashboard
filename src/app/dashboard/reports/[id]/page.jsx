@@ -4,6 +4,8 @@ import { apiFetch } from "@/lib/api";
 import StatusBadge from "@/components/common/status-badge";
 import ReportDetailTables from "@/components/reports/reports-detail-tables";
 import ReportDetailHeader from "@/components/reports/report-detail-header";
+import ReportLocationMap from "@/components/reports/report-location-map";
+import ReportPhotoPreview from "@/components/reports/report-photo-preview";
 
 function formatDate(value) {
   if (!value) return "-";
@@ -131,6 +133,41 @@ export default async function ReportDetailPage({ params }) {
               {report?.nearestHospital?.hospitalName || "-"}
             </Descriptions.Item>
           </Descriptions>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-4 py-3">
+            <h2 className="m-0 text-base font-semibold text-slate-800">
+              Report Location Map
+            </h2>
+          </div>
+
+          <div className="p-4">
+            <ReportLocationMap
+              latitude={report.latitude}
+              longitude={report.longitude}
+              addressSnapshot={report.addressSnapshot}
+            />
+          </div>
+        </div>
+
+        <div className="border border-slate-200 bg-white">
+          <div className="border-b border-slate-200 px-4 py-3">
+            <h2 className="m-0 text-base font-semibold text-slate-800">
+              Report Photo
+            </h2>
+          </div>
+
+          <div className="p-4">
+            <ReportPhotoPreview
+              photoUrl={report.photoUrl}
+              reportCode={report.reportCode}
+            />
+
+            
+          </div>
         </div>
       </div>
 

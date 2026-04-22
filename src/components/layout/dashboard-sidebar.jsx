@@ -11,6 +11,7 @@ import {
   TeamOutlined,
   CarOutlined,
   MedicineBoxOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -41,6 +42,11 @@ export default function DashboardSidebar({ collapsed }) {
         label: "Master Data",
         children: [
           {
+            key: "/dashboard/services",
+            icon: <AppstoreOutlined />,
+            label: <Link href="/dashboard/services">Services</Link>,
+          },
+          {
             key: "/dashboard/officers",
             icon: <TeamOutlined />,
             label: <Link href="/dashboard/officers">Officers</Link>,
@@ -66,6 +72,8 @@ export default function DashboardSidebar({ collapsed }) {
       return ["/dashboard/reports"];
     if (pathname.startsWith("/dashboard/dispatches"))
       return ["/dashboard/dispatches"];
+    if (pathname.startsWith("/dashboard/services"))
+      return ["/dashboard/services"];
     if (pathname.startsWith("/dashboard/officers"))
       return ["/dashboard/officers"];
     if (pathname.startsWith("/dashboard/ambulances"))
@@ -77,6 +85,7 @@ export default function DashboardSidebar({ collapsed }) {
 
   const openKeys = useMemo(() => {
     if (
+      pathname.startsWith("/dashboard/services") ||
       pathname.startsWith("/dashboard/officers") ||
       pathname.startsWith("/dashboard/ambulances") ||
       pathname.startsWith("/dashboard/hospitals")

@@ -20,6 +20,10 @@ const pageMap = {
     title: "Officers",
     items: [{ title: "Home" }, { title: "Master Data" }, { title: "Officers" }],
   },
+  "/dashboard/services": {
+    title: "Services",
+    items: [{ title: "Home" }, { title: "Master Data" }, { title: "Services" }],
+  },
   "/dashboard/ambulances": {
     title: "Ambulances",
     items: [

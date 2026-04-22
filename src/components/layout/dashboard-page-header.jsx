@@ -40,6 +40,10 @@ const pageMap = {
       { title: "Hospitals" },
     ],
   },
+  "/dashboard/roles": {
+    title: "Roles",
+    items: [{ title: "Home" }, { title: "Master Data" }, { title: "Roles" }],
+  },
 };
 
 export default function DashboardPageHeader() {

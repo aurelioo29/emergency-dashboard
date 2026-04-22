@@ -2,11 +2,16 @@
 
 import { useMemo, useState } from "react";
 import { Table, Tag, Tooltip, Button, Modal, Switch, message } from "antd";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
 import { clientApiFetch } from "@/lib/client-api";
 import MasterDataToolbar from "@/components/common/master-data-toolbar";
 import CreateOfficerModal from "./create-officer-modal";
 import EditOfficerModal from "./edit-officer-modal";
+import ManageOfficerServicesModal from "./manage-officer-services-modal";
 
 function formatDate(value) {
   if (!value) return "-";
@@ -42,16 +47,44 @@ function renderStatusTag(status) {
     AVAILABLE: "success",
     ON_DUTY: "processing",
     OFFLINE: "default",
-    BUSY: "warning",
-    INACTIVE: "default",
   };
 
   return <Tag color={colorMap[status] || "default"}>{formatText(status)}</Tag>;
 }
 
+function renderServiceTags(officerServices = []) {
+  if (!Array.isArray(officerServices) || officerServices.length === 0) {
+    return <span className="text-slate-400">-</span>;
+  }
+
+  return (
+    <div className="flex flex-wrap gap-1">
+      {officerServices.slice(0, 3).map((item) => {
+        const name = item?.service?.serviceName || item?.serviceName || "-";
+        const isPrimary = item?.isPrimary === true;
+
+        return (
+          <Tag
+            key={item.id || `${name}-${Math.random()}`}
+            color={isPrimary ? "blue" : "default"}
+          >
+            {name}
+            {isPrimary ? " (Primary)" : ""}
+          </Tag>
+        );
+      })}
+
+      {officerServices.length > 3 ? (
+        <Tag color="default">+{officerServices.length - 3} more</Tag>
+      ) : null}
+    </div>
+  );
+}
+
 export default function OfficersTable({ data = [], meta }) {
   const [openCreateModal, setOpenCreateModal] = useState(false);
   const [openEditModal, setOpenEditModal] = useState(false);
+  const [openManageServicesModal, setOpenManageServicesModal] = useState(false);
   const [selectedOfficer, setSelectedOfficer] = useState(null);
   const [toggleLoadingId, setToggleLoadingId] = useState(null);
   const [deleteLoadingId, setDeleteLoadingId] = useState(null);
@@ -61,6 +94,7 @@ export default function OfficersTable({ data = [], meta }) {
     "phoneNumber",
     "role",
     "status",
+    "assignedServices",
     "isActive",
     "lastLoginAt",
     "createdAt",
@@ -72,6 +106,11 @@ export default function OfficersTable({ data = [], meta }) {
   const handleOpenEdit = (record) => {
     setSelectedOfficer(record);
     setOpenEditModal(true);
+  };
+
+  const handleOpenManageServices = (record) => {
+    setSelectedOfficer(record);
+    setOpenManageServicesModal(true);
   };
 
   const handleToggleActive = (record, checked) => {
@@ -178,6 +217,11 @@ export default function OfficersTable({ data = [], meta }) {
         render: (value) => renderStatusTag(value),
       },
       {
+        key: "assignedServices",
+        title: "Assigned Services",
+        render: (_, record) => renderServiceTags(record?.officerServices || []),
+      },
+      {
         key: "isActive",
         title: "Account",
         dataIndex: "isActive",
@@ -204,6 +248,15 @@ export default function OfficersTable({ data = [], meta }) {
         title: "Action",
         render: (_, record) => (
           <div className="flex items-center gap-2">
+            <Tooltip title="Manage Services">
+              <Button
+                type="text"
+                icon={<AppstoreOutlined />}
+                className="!text-violet-500 hover:!text-violet-600"
+                onClick={() => handleOpenManageServices(record)}
+              />
+            </Tooltip>
+
             <Tooltip title="Edit">
               <Button
                 type="text"
@@ -247,7 +300,8 @@ export default function OfficersTable({ data = [], meta }) {
           <div>
             <h1 className="mb-1 text-2xl font-bold text-slate-900">Officers</h1>
             <p className="m-0 text-sm text-slate-500">
-              Monitor officer accounts, roles, and operational readiness.
+              Monitor officer accounts, roles, service assignments, and
+              operational readiness.
             </p>
           </div>
 
@@ -283,6 +337,16 @@ export default function OfficersTable({ data = [], meta }) {
         open={openEditModal}
         onClose={() => {
           setOpenEditModal(false);
+          setSelectedOfficer(null);
+        }}
+        officer={selectedOfficer}
+        onSuccess={() => window.location.reload()}
+      />
+
+      <ManageOfficerServicesModal
+        open={openManageServicesModal}
+        onClose={() => {
+          setOpenManageServicesModal(false);
           setSelectedOfficer(null);
         }}
         officer={selectedOfficer}

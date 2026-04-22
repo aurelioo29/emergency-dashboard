@@ -12,6 +12,32 @@ export default function EditOfficerModal({
 }) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [rolesLoading, setRolesLoading] = useState(false);
+  const [roleOptions, setRoleOptions] = useState([]);
+
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        setRolesLoading(true);
+
+        const result = await clientApiFetch("/roles/active");
+        const options = (result?.data || []).map((role) => ({
+          value: role.id,
+          label: `${role.roleName} (${role.roleCode})`,
+        }));
+
+        setRoleOptions(options);
+      } catch (error) {
+        message.error(error.message || "Failed to load roles");
+      } finally {
+        setRolesLoading(false);
+      }
+    };
+
+    if (open) {
+      fetchRoles();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (open && officer) {
@@ -19,7 +45,7 @@ export default function EditOfficerModal({
         fullName: officer.fullName || "",
         email: officer.email || "",
         phoneNumber: officer.phoneNumber || "",
-        role: officer.role || undefined,
+        roleId: officer.roleId || officer.roleDetail?.id || undefined,
         status: officer.status || "AVAILABLE",
         isActive: officer.isActive ?? true,
         password: "",
@@ -42,7 +68,7 @@ export default function EditOfficerModal({
         fullName: values.fullName,
         email: values.email,
         phoneNumber: values.phoneNumber,
-        role: values.role,
+        roleId: values.roleId,
         status: values.status,
         isActive: values.isActive,
       };
@@ -104,17 +130,13 @@ export default function EditOfficerModal({
 
         <Form.Item
           label="Role"
-          name="role"
+          name="roleId"
           rules={[{ required: true, message: "Role is required" }]}
         >
           <Select
             placeholder="Select role"
-            options={[
-              { value: "PARAMEDIC", label: "Paramedic" },
-              { value: "AMBULANCE_DRIVER", label: "Ambulance Driver" },
-              { value: "FIRE_OFFICER", label: "Fire Officer" },
-              { value: "POLICE", label: "Police" },
-            ]}
+            loading={rolesLoading}
+            options={roleOptions}
           />
         </Form.Item>
 

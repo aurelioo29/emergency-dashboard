@@ -91,8 +91,7 @@ export default function CreateOfficerModal({ open, onClose, onSuccess }) {
               { value: "PARAMEDIC", label: "Paramedic" },
               { value: "AMBULANCE_DRIVER", label: "Ambulance Driver" },
               { value: "FIRE_OFFICER", label: "Fire Officer" },
-              { value: "POLICE_OFFICER", label: "Police Officer" },
-              { value: "FIELD_RESPONDER", label: "Field Responder" },
+              { value: "POLICE", label: "Police" },
             ]}
           />
         </Form.Item>
@@ -107,7 +106,6 @@ export default function CreateOfficerModal({ open, onClose, onSuccess }) {
             options={[
               { value: "AVAILABLE", label: "Available" },
               { value: "ON_DUTY", label: "On Duty" },
-              { value: "BUSY", label: "Busy" },
               { value: "OFFLINE", label: "Offline" },
             ]}
           />

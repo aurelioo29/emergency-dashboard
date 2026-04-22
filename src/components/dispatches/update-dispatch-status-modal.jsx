@@ -68,6 +68,8 @@ export default function UpdateDispatchStatusModal({
             options={[
               { value: "ASSIGNED", label: "Assigned" },
               { value: "ACCEPTED", label: "Accepted" },
+              { value: "REJECTED", label: "Rejected" },
+              { value: "EXPIRED", label: "Expired" },
               { value: "ON_THE_WAY", label: "On The Way" },
               { value: "ARRIVED", label: "Arrived" },
               { value: "COMPLETED", label: "Completed" },

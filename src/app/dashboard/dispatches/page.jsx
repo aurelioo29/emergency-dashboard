@@ -1,16 +1,19 @@
 import { Suspense } from "react";
+import { redirect } from "next/navigation";
+import { Alert } from "antd";
 import { apiFetch } from "@/lib/api";
 import DispatchesTable from "@/components/dispatches/dispatches-table";
 
 async function DispatchesContent({ searchParams }) {
   const resolvedSearchParams = await searchParams;
-  
+
   const page = resolvedSearchParams?.page || "1";
   const limit = resolvedSearchParams?.limit || "10";
   const dispatchStatus = resolvedSearchParams?.dispatchStatus || "";
   const reportId = resolvedSearchParams?.reportId || "";
   const officerId = resolvedSearchParams?.officerId || "";
   const ambulanceId = resolvedSearchParams?.ambulanceId || "";
+  const serviceId = resolvedSearchParams?.serviceId || "";
 
   const query = new URLSearchParams({
     page,
@@ -19,22 +22,37 @@ async function DispatchesContent({ searchParams }) {
     ...(reportId ? { reportId } : {}),
     ...(officerId ? { officerId } : {}),
     ...(ambulanceId ? { ambulanceId } : {}),
+    ...(serviceId ? { serviceId } : {}),
   });
 
-  const result = await apiFetch(`/dispatches?${query.toString()}`);
+  let result = null;
+  let pageError = null;
 
-  return (
-    <div>
-      <div className="mb-4">
-        <h1 className="mb-1 text-2xl font-bold text-slate-900">Dispatches</h1>
-        <p className="m-0 text-sm text-slate-500">
-          Monitor all dispatch assignments and response progress.
-        </p>
+  try {
+    result = await apiFetch(`/dispatches?${query.toString()}`);
+  } catch (error) {
+    if (error.message === "SESSION_EXPIRED") {
+      redirect("/login");
+    }
+
+    pageError = error.message || "Failed to load dispatches";
+  }
+
+  if (pageError) {
+    return (
+      <div className="space-y-4">
+        <h1 className="text-2xl font-bold text-slate-900">Dispatches</h1>
+        <Alert
+          type="error"
+          showIcon
+          title="Failed to load dispatches"
+          description={pageError}
+        />
       </div>
+    );
+  }
 
-      <DispatchesTable data={result.data} meta={result.meta} />
-    </div>
-  );
+  return <DispatchesTable data={result.data} meta={result.meta} />;
 }
 
 export default async function DispatchesPage({ searchParams }) {

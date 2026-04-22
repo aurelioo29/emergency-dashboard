@@ -24,7 +24,9 @@ export default function AssignDispatchModal({
         setFetchingOptions(true);
 
         const [officerRes, ambulanceRes] = await Promise.all([
-          clientApiFetch("/officers?page=1&limit=100"),
+          clientApiFetch(
+            "/officers?page=1&limit=100&status=AVAILABLE&isActive=true",
+          ),
           clientApiFetch("/ambulances?page=1&limit=100"),
         ]);
 
@@ -59,6 +61,7 @@ export default function AssignDispatchModal({
           officerId: values.officerId || null,
           ambulanceId: values.ambulanceId || null,
           notes: values.notes || null,
+          autoAssigned: false,
         }),
       });
 
@@ -96,18 +99,17 @@ export default function AssignDispatchModal({
               placeholder="Select officer"
               options={officers.map((item) => ({
                 value: item.id,
-                label: `${item.fullName} — ${item.role}`,
+                label: `${item.fullName} — ${
+                  item?.roleDetail?.roleName || item?.role || "-"
+                }`,
               }))}
             />
           </Form.Item>
 
-          <Form.Item
-            label="Ambulance"
-            name="ambulanceId"
-            rules={[{ required: true, message: "Please select an ambulance" }]}
-          >
+          <Form.Item label="Ambulance" name="ambulanceId">
             <Select
-              placeholder="Select ambulance"
+              allowClear
+              placeholder="Select ambulance (optional)"
               options={ambulances.map((item) => ({
                 value: item.id,
                 label: `${item.code} — ${item.plateNumber || "-"}`,

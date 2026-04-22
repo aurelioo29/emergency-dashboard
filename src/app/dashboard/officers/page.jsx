@@ -10,7 +10,7 @@ async function OfficersContent({ searchParams }) {
   const page = resolvedSearchParams?.page || "1";
   const limit = resolvedSearchParams?.limit || "10";
   const status = resolvedSearchParams?.status || "";
-  const role = resolvedSearchParams?.role || "";
+  const roleId = resolvedSearchParams?.roleId || "";
   const isActive = resolvedSearchParams?.isActive || "";
   const search = resolvedSearchParams?.search || "";
 
@@ -18,7 +18,7 @@ async function OfficersContent({ searchParams }) {
     page,
     limit,
     ...(status ? { status } : {}),
-    ...(role ? { role } : {}),
+    ...(roleId ? { roleId } : {}),
     ...(isActive ? { isActive } : {}),
     ...(search ? { search } : {}),
   });

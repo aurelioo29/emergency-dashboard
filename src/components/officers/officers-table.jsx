@@ -60,7 +60,7 @@ function renderServiceTags(officerServices = []) {
   return (
     <div className="flex flex-wrap gap-1">
       {officerServices.slice(0, 3).map((item) => {
-        const name = item?.service?.serviceName || item?.serviceName || "-";
+        const name = item?.service?.serviceName || "-";
         const isPrimary = item?.isPrimary === true;
 
         return (
@@ -203,11 +203,15 @@ export default function OfficersTable({ data = [], meta }) {
       {
         key: "role",
         title: "Role",
-        dataIndex: "role",
-        render: (value) => (
-          <span className="font-medium text-slate-700">
-            {formatText(value)}
-          </span>
+        render: (_, record) => (
+          <div>
+            <p className="m-0 font-medium text-slate-700">
+              {record?.roleDetail?.roleName || formatText(record?.role) || "-"}
+            </p>
+            <p className="m-0 text-xs text-slate-500">
+              {record?.roleDetail?.roleCode || "-"}
+            </p>
+          </div>
         ),
       },
       {

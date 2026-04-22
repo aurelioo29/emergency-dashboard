@@ -12,6 +12,7 @@ import {
   CarOutlined,
   MedicineBoxOutlined,
   AppstoreOutlined,
+  SolutionOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -61,6 +62,11 @@ export default function DashboardSidebar({ collapsed }) {
             icon: <MedicineBoxOutlined />,
             label: <Link href="/dashboard/hospitals">Hospitals</Link>,
           },
+          {
+            key: "/dashboard/roles",
+            icon: <SolutionOutlined />,
+            label: <Link href="/dashboard/roles">Roles</Link>,
+          },
         ],
       },
     ],
@@ -80,6 +86,7 @@ export default function DashboardSidebar({ collapsed }) {
       return ["/dashboard/ambulances"];
     if (pathname.startsWith("/dashboard/hospitals"))
       return ["/dashboard/hospitals"];
+    if (pathname.startsWith("/dashboard/roles")) return ["/dashboard/roles"];
     return ["/dashboard"];
   }, [pathname]);
 
@@ -88,7 +95,8 @@ export default function DashboardSidebar({ collapsed }) {
       pathname.startsWith("/dashboard/services") ||
       pathname.startsWith("/dashboard/officers") ||
       pathname.startsWith("/dashboard/ambulances") ||
-      pathname.startsWith("/dashboard/hospitals")
+      pathname.startsWith("/dashboard/hospitals") ||
+      pathname.startsWith("/dashboard/roles")
     ) {
       return ["master-data"];
     }

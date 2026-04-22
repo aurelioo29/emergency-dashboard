@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { Descriptions, Alert } from "antd";
+import { Descriptions, Alert, Tag } from "antd";
 import { apiFetch } from "@/lib/api";
 import StatusBadge from "@/components/common/status-badge";
 import ReportDetailTables from "@/components/reports/reports-detail-tables";
@@ -72,15 +72,6 @@ export default async function ReportDetailPage({ params }) {
     <div className="space-y-6">
       <ReportDetailHeader report={report} />
 
-      <div>
-        <h1 className="mb-1 text-2xl font-bold text-slate-900">
-          Report Detail
-        </h1>
-        <p className="m-0 text-sm text-slate-500">
-          Full information for emergency report {report.reportCode}.
-        </p>
-      </div>
-
       <div className="border border-slate-200 bg-white">
         <div className="border-b border-slate-200 px-4 py-3">
           <h2 className="m-0 text-base font-semibold text-slate-800">
@@ -97,11 +88,32 @@ export default async function ReportDetailPage({ params }) {
               <StatusBadge status={report.status} />
             </Descriptions.Item>
 
-            <Descriptions.Item label="Emergency Type">
-              {formatText(report.emergencyType)}
+            <Descriptions.Item label="Service">
+              <div className="space-y-1">
+                <div>
+                  {report?.service?.serviceName ||
+                    formatText(report?.emergencyType)}
+                </div>
+                {report?.service?.serviceCode ? (
+                  <Tag color="default">{report.service.serviceCode}</Tag>
+                ) : null}
+              </div>
             </Descriptions.Item>
             <Descriptions.Item label="Requested At">
               {formatDate(report.requestedAt)}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Dispatch Mode">
+              {report?.service?.requiresDispatch ? (
+                <Tag color="processing">
+                  {formatText(report?.service?.autoAcceptMode || "MANUAL")}
+                </Tag>
+              ) : (
+                <Tag color="default">No Dispatch</Tag>
+              )}
+            </Descriptions.Item>
+            <Descriptions.Item label="Nearest Hospital">
+              {report?.nearestHospital?.hospitalName || "-"}
             </Descriptions.Item>
 
             <Descriptions.Item label="Description" span={2}>
@@ -122,15 +134,22 @@ export default async function ReportDetailPage({ params }) {
             <Descriptions.Item label="Assigned At">
               {formatDate(report.assignedAt)}
             </Descriptions.Item>
+            <Descriptions.Item label="Accepted At">
+              {formatDate(report.acceptedAt)}
+            </Descriptions.Item>
+
             <Descriptions.Item label="Arrived At">
               {formatDate(report.arrivedAt)}
             </Descriptions.Item>
-
             <Descriptions.Item label="Completed At">
               {formatDate(report.completedAt)}
             </Descriptions.Item>
-            <Descriptions.Item label="Nearest Hospital">
-              {report?.nearestHospital?.hospitalName || "-"}
+
+            <Descriptions.Item label="Cancelled At">
+              {formatDate(report.cancelledAt)}
+            </Descriptions.Item>
+            <Descriptions.Item label="Failed At">
+              {formatDate(report.failedAt)}
             </Descriptions.Item>
           </Descriptions>
         </div>
@@ -165,8 +184,6 @@ export default async function ReportDetailPage({ params }) {
               photoUrl={report.photoUrl}
               reportCode={report.reportCode}
             />
-
-            
           </div>
         </div>
       </div>

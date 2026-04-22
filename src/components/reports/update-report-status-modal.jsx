@@ -68,11 +68,13 @@ export default function UpdateReportStatusModal({
             options={[
               { value: "REPORTED", label: "Reported" },
               { value: "ASSIGNED", label: "Assigned" },
+              { value: "ACCEPTED", label: "Accepted" },
               { value: "ON_THE_WAY", label: "On The Way" },
               { value: "ARRIVED", label: "Arrived" },
               { value: "HANDLING", label: "Handling" },
               { value: "COMPLETED", label: "Completed" },
               { value: "CANCELLED", label: "Cancelled" },
+              { value: "FAILED", label: "Failed" },
             ]}
           />
         </Form.Item>

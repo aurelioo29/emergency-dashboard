@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Table, Button, Space } from "antd";
+import { Table, Button, Space, Tag } from "antd";
+import { DeploymentUnitOutlined } from "@ant-design/icons";
 import StatusBadge from "@/components/common/status-badge";
 
 function formatDate(value) {
@@ -16,24 +17,69 @@ function formatDate(value) {
   });
 }
 
+function formatText(value) {
+  if (!value) return "-";
+  return String(value).replaceAll("_", " ");
+}
+
+function renderDispatchModeTag(service) {
+  if (!service) return <Tag color="default">Unknown</Tag>;
+  if (service.requiresDispatch === false) {
+    return <Tag color="default">No Dispatch</Tag>;
+  }
+
+  const mode = service.autoAcceptMode || "MANUAL";
+  const colorMap = {
+    FULL_AUTO: "success",
+    CONFIRM: "warning",
+    MANUAL: "processing",
+  };
+
+  return <Tag color={colorMap[mode] || "default"}>{formatText(mode)}</Tag>;
+}
+
 export default function ReportTable({ data = [], meta }) {
   const columns = [
     {
-      title: "Report Code",
-      dataIndex: "reportCode",
-      key: "reportCode",
-      render: (value) => (
-        <span className="font-medium text-slate-800">{value}</span>
+      title: "Report",
+      key: "report",
+      render: (_, record) => (
+        <div>
+          <p className="m-0 font-medium text-slate-800">
+            {record?.reportCode || "-"}
+          </p>
+          <p className="m-0 text-xs text-slate-500">
+            {record?.user?.fullName || "-"}
+          </p>
+        </div>
       ),
     },
     {
-      title: "Emergency Type",
-      dataIndex: "emergencyType",
-      key: "emergencyType",
-      render: (value) => (
-        <span className="font-medium text-slate-700">
-          {String(value || "").replaceAll("_", " ")}
-        </span>
+      title: "Service",
+      key: "service",
+      render: (_, record) => (
+        <div>
+          <p className="m-0 font-medium text-slate-800">
+            {record?.service?.serviceName ||
+              formatText(record?.emergencyType) ||
+              "-"}
+          </p>
+          <p className="m-0 text-xs text-slate-500">
+            {record?.service?.serviceCode || "-"}
+          </p>
+        </div>
+      ),
+    },
+    {
+      title: "Dispatch Mode",
+      key: "dispatchMode",
+      render: (_, record) => (
+        <div className="space-y-1">
+          {renderDispatchModeTag(record?.service)}
+          <p className="m-0 text-xs text-slate-500">
+            {record?.service?.requiresDispatch ? "Requires dispatch" : "No dispatch needed"}
+          </p>
+        </div>
       ),
     },
     {
@@ -44,7 +90,6 @@ export default function ReportTable({ data = [], meta }) {
     },
     {
       title: "Requester",
-      dataIndex: ["user", "fullName"],
       key: "user",
       render: (_, record) => (
         <div>
@@ -53,6 +98,20 @@ export default function ReportTable({ data = [], meta }) {
           </p>
           <p className="m-0 text-xs text-slate-500">
             {record?.user?.phoneNumber || "-"}
+          </p>
+        </div>
+      ),
+    },
+    {
+      title: "Nearest Hospital",
+      key: "nearestHospital",
+      render: (_, record) => (
+        <div>
+          <p className="m-0 font-medium text-slate-800">
+            {record?.nearestHospital?.hospitalName || "-"}
+          </p>
+          <p className="m-0 text-xs text-slate-500">
+            {record?.nearestHospital?.phoneNumber || "-"}
           </p>
         </div>
       ),
@@ -75,6 +134,19 @@ export default function ReportTable({ data = [], meta }) {
               Detail
             </Button>
           </Link>
+
+          {record?.service?.requiresDispatch === true &&
+          !["COMPLETED", "CANCELLED", "FAILED"].includes(record?.status) ? (
+            <Link href={`/dashboard/reports/${record.id}`}>
+              <Button
+                type="link"
+                icon={<DeploymentUnitOutlined />}
+                className="!px-0"
+              >
+                Dispatch
+              </Button>
+            </Link>
+          ) : null}
         </Space>
       ),
     },

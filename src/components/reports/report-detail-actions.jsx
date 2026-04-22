@@ -13,6 +13,7 @@ import {
 } from "@ant-design/icons";
 
 export default function ReportDetailActions({
+  report,
   onAssignDispatch,
   onUpdateReportStatus,
   onUpdateDispatchStatus,
@@ -20,6 +21,13 @@ export default function ReportDetailActions({
   onViewLogs,
 }) {
   const btnClass = "!px-0 text-sm";
+
+  const canAssignDispatch =
+    report?.service?.requiresDispatch === true &&
+    !["COMPLETED", "CANCELLED", "FAILED"].includes(report?.status);
+
+  const canUpdateDispatch =
+    Array.isArray(report?.dispatches) && report.dispatches.length > 0;
 
   return (
     <div className="flex flex-wrap items-center gap-4 border-b border-slate-200 bg-white px-4 py-3">
@@ -29,14 +37,16 @@ export default function ReportDetailActions({
         </Button>
       </Link>
 
-      <Button
-        type="link"
-        icon={<PlusCircleOutlined />}
-        className={btnClass}
-        onClick={onAssignDispatch}
-      >
-        Assign Dispatch
-      </Button>
+      {canAssignDispatch ? (
+        <Button
+          type="link"
+          icon={<PlusCircleOutlined />}
+          className={btnClass}
+          onClick={onAssignDispatch}
+        >
+          Assign Dispatch
+        </Button>
+      ) : null}
 
       <Button
         type="link"
@@ -47,14 +57,16 @@ export default function ReportDetailActions({
         Update Report Status
       </Button>
 
-      <Button
-        type="link"
-        icon={<DeliveredProcedureOutlined />}
-        className={btnClass}
-        onClick={onUpdateDispatchStatus}
-      >
-        Update Dispatch Status
-      </Button>
+      {canUpdateDispatch ? (
+        <Button
+          type="link"
+          icon={<DeliveredProcedureOutlined />}
+          className={btnClass}
+          onClick={onUpdateDispatchStatus}
+        >
+          Update Dispatch Status
+        </Button>
+      ) : null}
 
       <Button
         type="link"

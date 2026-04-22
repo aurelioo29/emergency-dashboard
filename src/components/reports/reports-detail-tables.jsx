@@ -53,6 +53,24 @@ export default function ReportDetailTables({
 
   const dispatchColumns = [
     {
+      title: "Service",
+      key: "service",
+      render: (_, record) => (
+        <div>
+          <p className="m-0 font-medium text-slate-800">
+            {record?.service?.serviceName ||
+              record?.report?.service?.serviceName ||
+              "-"}
+          </p>
+          <p className="m-0 text-xs text-slate-500">
+            {record?.service?.serviceCode ||
+              record?.report?.service?.serviceCode ||
+              "-"}
+          </p>
+        </div>
+      ),
+    },
+    {
       title: "Dispatch Status",
       dataIndex: "dispatchStatus",
       key: "dispatchStatus",
@@ -67,7 +85,9 @@ export default function ReportDetailTables({
             {record?.officer?.fullName || "-"}
           </p>
           <p className="m-0 text-xs text-slate-500">
-            {record?.officer?.role ? formatText(record.officer.role) : "-"}
+            {record?.officer?.roleDetail?.roleName ||
+              formatText(record?.officer?.role) ||
+              "-"}
           </p>
         </div>
       ),
@@ -87,9 +107,29 @@ export default function ReportDetailTables({
       ),
     },
     {
+      title: "Assign Mode",
+      key: "assignMode",
+      render: (_, record) => (
+        <div>
+          <Tag color={record?.autoAssigned ? "processing" : "default"}>
+            {record?.autoAssigned ? "Auto" : "Manual"}
+          </Tag>
+          <p className="m-0 text-xs text-slate-500">
+            Order: {record?.assignmentOrder || 1}
+          </p>
+        </div>
+      ),
+    },
+    {
       title: "Assigned At",
       dataIndex: "assignedAt",
       key: "assignedAt",
+      render: (value) => formatDate(value),
+    },
+    {
+      title: "Expires At",
+      dataIndex: "expiresAt",
+      key: "expiresAt",
       render: (value) => formatDate(value),
     },
   ];

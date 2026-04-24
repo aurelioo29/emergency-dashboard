@@ -10,7 +10,9 @@ import {
   Button,
   message,
   InputNumber,
+  Upload,
 } from "antd";
+import { UploadOutlined } from "@ant-design/icons";
 import { clientApiFetch } from "@/lib/client-api";
 
 const AUTO_ACCEPT_OPTIONS = [
@@ -34,26 +36,36 @@ export default function CreateServiceModal({ open, onClose, onSuccess }) {
     try {
       setLoading(true);
 
-      const payload = {
-        serviceName: values.serviceName,
-        serviceCode: values.serviceCode?.toUpperCase(),
-        description: values.description || null,
-        iconName: values.iconName || null,
-        colorHex: values.colorHex || null,
-        requiresDispatch: values.requiresDispatch,
-        autoAcceptMode: values.requiresDispatch
-          ? values.autoAcceptMode
-          : "MANUAL",
-        acceptTimeoutSeconds:
+      const formData = new FormData();
+
+      formData.append("serviceName", values.serviceName);
+      formData.append("serviceCode", values.serviceCode?.toUpperCase());
+      formData.append("description", values.description || "");
+      formData.append("iconName", values.iconName || "");
+      formData.append("colorHex", values.colorHex || "");
+      formData.append("requiresDispatch", String(values.requiresDispatch));
+      formData.append(
+        "autoAcceptMode",
+        values.requiresDispatch ? values.autoAcceptMode : "MANUAL",
+      );
+      formData.append(
+        "acceptTimeoutSeconds",
+        String(
           values.requiresDispatch && values.autoAcceptMode === "CONFIRM"
             ? values.acceptTimeoutSeconds || 15
             : 0,
-        isActive: values.isActive,
-      };
+        ),
+      );
+      formData.append("isActive", String(values.isActive));
+
+      const iconFile = values.icon?.[0]?.originFileObj;
+      if (iconFile) {
+        formData.append("icon", iconFile);
+      }
 
       await clientApiFetch("/services", {
         method: "POST",
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       message.success("Service created successfully");
@@ -110,12 +122,32 @@ export default function CreateServiceModal({ open, onClose, onSuccess }) {
           />
         </Form.Item>
 
+        <Form.Item
+          label="Service Icon"
+          name="icon"
+          valuePropName="fileList"
+          getValueFromEvent={(event) => {
+            if (Array.isArray(event)) return event;
+            return event?.fileList || [];
+          }}
+          extra="Upload JPG, PNG, WEBP, or SVG. Max 2MB."
+        >
+          <Upload
+            beforeUpload={() => false}
+            maxCount={1}
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            listType="picture"
+          >
+            <Button icon={<UploadOutlined />}>Upload Icon</Button>
+          </Upload>
+        </Form.Item>
+
         <Form.Item label="Icon Name" name="iconName">
-          <Input placeholder="Enter icon name (optional)" />
+          <Input placeholder="Fallback icon name, e.g. ambulance" />
         </Form.Item>
 
         <Form.Item label="Color Hex" name="colorHex">
-          <Input placeholder="Enter color hex (optional), e.g. #EF4444" />
+          <Input placeholder="Enter color hex, e.g. #EF4444" />
         </Form.Item>
 
         <Form.Item

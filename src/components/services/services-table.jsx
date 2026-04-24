@@ -4,61 +4,52 @@ import { useMemo, useState } from "react";
 import { Table, Tag, Tooltip, Button, Modal, Switch, message } from "antd";
 import { EditOutlined } from "@ant-design/icons";
 import { clientApiFetch } from "@/lib/client-api";
-import MasterDataToolbar from "@/components/common/master-data-toolbar";
+import { resolveFileUrl } from "@/lib/file-url";
 import CreateServiceModal from "./create-service-modal";
 import EditServiceModal from "./edit-service-modal";
 
-function formatDate(value) {
+function formatText(value) {
   if (!value) return "-";
-
-  return new Date(value).toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  return String(value).replaceAll("_", " ");
 }
 
 function renderActiveTag(value) {
-  if (value === true) {
-    return <Tag color="success">Active</Tag>;
-  }
-
-  if (value === false) {
-    return <Tag color="default">Inactive</Tag>;
-  }
-
+  if (value === true) return <Tag color="success">Active</Tag>;
+  if (value === false) return <Tag color="default">Inactive</Tag>;
   return "-";
 }
 
-function renderDispatchTag(value) {
-  if (value === true) {
-    return <Tag color="processing">Required</Tag>;
+function ServiceIcon({ service }) {
+  const iconUrl = resolveFileUrl(service?.iconUrl);
+
+  if (iconUrl) {
+    return (
+      <div
+        className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-lg border border-slate-200 bg-white"
+        style={{
+          backgroundColor: service?.colorHex || undefined,
+        }}
+      >
+        <img
+          src={iconUrl}
+          alt={service?.serviceName || "Service icon"}
+          className="h-7 w-7 object-contain"
+        />
+      </div>
+    );
   }
-
-  if (value === false) {
-    return <Tag color="default">No Dispatch</Tag>;
-  }
-
-  return "-";
-}
-
-function renderModeTag(value) {
-  const colorMap = {
-    FULL_AUTO: "success",
-    CONFIRM: "warning",
-    MANUAL: "default",
-  };
-
-  const labelMap = {
-    FULL_AUTO: "Full Auto",
-    CONFIRM: "Confirm",
-    MANUAL: "Manual",
-  };
 
   return (
-    <Tag color={colorMap[value] || "default"}>{labelMap[value] || "-"}</Tag>
+    <div
+      className="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 text-xs font-bold text-slate-700"
+      style={{
+        backgroundColor: service?.colorHex || "#F8FAFC",
+      }}
+    >
+      {service?.iconName?.slice(0, 2)?.toUpperCase() ||
+        service?.serviceCode?.slice(0, 2)?.toUpperCase() ||
+        "SV"}
+    </div>
   );
 }
 
@@ -68,33 +59,19 @@ export default function ServicesTable({ data = [], meta }) {
   const [selectedService, setSelectedService] = useState(null);
   const [toggleLoadingId, setToggleLoadingId] = useState(null);
 
-  const defaultVisibleColumns = [
-    "serviceName",
-    "requiresDispatch",
-    "autoAcceptMode",
-    "acceptTimeoutSeconds",
-    "isActive",
-    "createdAt",
-    "action",
-  ];
-
-  const [visibleColumns, setVisibleColumns] = useState(defaultVisibleColumns);
-
   const handleOpenEdit = (record) => {
     setSelectedService(record);
     setOpenEditModal(true);
   };
 
   const handleToggleActive = (record, checked) => {
-    const nextActive = checked;
-
     Modal.confirm({
-      title: `${nextActive ? "Activate" : "Deactivate"} Service`,
-      content: `Are you sure you want to ${nextActive ? "activate" : "deactivate"} ${record?.serviceName || "this service"}?`,
-      okText: nextActive ? "Activate" : "Deactivate",
-      okButtonProps: {
-        danger: !nextActive,
-      },
+      title: `${checked ? "Activate" : "Deactivate"} Service`,
+      content: `Are you sure you want to ${
+        checked ? "activate" : "deactivate"
+      } ${record?.serviceName || "this service"}?`,
+      okText: checked ? "Activate" : "Deactivate",
+      okButtonProps: { danger: !checked },
       cancelText: "Cancel",
       async onOk() {
         try {
@@ -103,20 +80,17 @@ export default function ServicesTable({ data = [], meta }) {
           await clientApiFetch(`/services/${record.id}/toggle-active`, {
             method: "PATCH",
             body: JSON.stringify({
-              isActive: nextActive,
+              isActive: checked,
             }),
           });
 
           message.success(
-            `Service ${nextActive ? "activated" : "deactivated"} successfully`,
+            `Service ${checked ? "activated" : "deactivated"} successfully`,
           );
 
           window.location.reload();
         } catch (error) {
-          message.error(
-            error.message ||
-              `Failed to ${nextActive ? "activate" : "deactivate"} service`,
-          );
+          message.error(error.message || "Failed to update service status");
         } finally {
           setToggleLoadingId(null);
         }
@@ -124,60 +98,66 @@ export default function ServicesTable({ data = [], meta }) {
     });
   };
 
-  const allColumns = useMemo(
+  const columns = useMemo(
     () => [
       {
-        key: "serviceName",
         title: "Service",
-        dataIndex: "serviceName",
-        render: (value, record) => (
-          <div>
-            <p className="m-0 font-medium text-slate-900">{value || "-"}</p>
+        key: "service",
+        render: (_, record) => (
+          <div className="flex items-center gap-3">
+            <ServiceIcon service={record} />
+
+            <div>
+              <p className="m-0 font-medium text-slate-900">
+                {record?.serviceName || "-"}
+              </p>
+              <p className="m-0 text-xs text-slate-500">
+                {record?.serviceCode || "-"}
+              </p>
+            </div>
+          </div>
+        ),
+      },
+      {
+        title: "Description",
+        dataIndex: "description",
+        key: "description",
+        render: (value) => (
+          <span className="text-slate-600">{value || "-"}</span>
+        ),
+      },
+      {
+        title: "Dispatch",
+        key: "dispatch",
+        render: (_, record) => (
+          <div className="space-y-1">
+            <Tag color={record?.requiresDispatch ? "processing" : "default"}>
+              {record?.requiresDispatch ? "Required" : "Not Required"}
+            </Tag>
             <p className="m-0 text-xs text-slate-500">
-              {record?.serviceCode || "-"}
+              {formatText(record?.autoAcceptMode)}
             </p>
           </div>
         ),
       },
       {
-        key: "requiresDispatch",
-        title: "Dispatch",
-        dataIndex: "requiresDispatch",
-        render: (value) => renderDispatchTag(value),
-      },
-      {
-        key: "autoAcceptMode",
-        title: "Mode",
-        dataIndex: "autoAcceptMode",
-        render: (value) => renderModeTag(value),
-      },
-      {
-        key: "acceptTimeoutSeconds",
         title: "Timeout",
         dataIndex: "acceptTimeoutSeconds",
-        render: (value, record) => {
-          if (!record?.requiresDispatch) return "-";
-          if (record?.autoAcceptMode !== "CONFIRM") return "-";
-          return `${value || 0} sec`;
-        },
+        key: "acceptTimeoutSeconds",
+        render: (value, record) =>
+          record?.requiresDispatch && record?.autoAcceptMode === "CONFIRM"
+            ? `${value || 0}s`
+            : "-",
       },
       {
-        key: "isActive",
         title: "Status",
         dataIndex: "isActive",
+        key: "isActive",
         render: (value) => renderActiveTag(value),
       },
       {
-        key: "createdAt",
-        title: "Created At",
-        dataIndex: "createdAt",
-        render: (value) => (
-          <span className="text-slate-600">{formatDate(value)}</span>
-        ),
-      },
-      {
-        key: "action",
         title: "Action",
+        key: "action",
         render: (_, record) => (
           <div className="flex items-center gap-2">
             <Tooltip title="Edit">
@@ -204,8 +184,6 @@ export default function ServicesTable({ data = [], meta }) {
     [toggleLoadingId],
   );
 
-  const columns = allColumns.filter((col) => visibleColumns.includes(col.key));
-
   return (
     <>
       <div className="space-y-4">
@@ -217,13 +195,9 @@ export default function ServicesTable({ data = [], meta }) {
             </p>
           </div>
 
-          <MasterDataToolbar
-            columns={allColumns}
-            visibleColumns={visibleColumns}
-            onChangeVisibleColumns={setVisibleColumns}
-            onAddNew={() => setOpenCreateModal(true)}
-            onRefresh={() => window.location.reload()}
-          />
+          <Button type="primary" onClick={() => setOpenCreateModal(true)}>
+            Add Service
+          </Button>
         </div>
 
         <Table

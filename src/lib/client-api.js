@@ -1,17 +1,20 @@
 "use client";
 
-import { getSession, signOut } from "next-auth/react";
+import { getSession } from "next-auth/react";
 
 export async function clientApiFetch(path, options = {}) {
   const session = await getSession();
 
-  if (!session?.accessToken) {
-    throw new Error("No access token found");
-  }
+  const isFormData =
+    typeof FormData !== "undefined" && options.body instanceof FormData;
 
   const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${session.accessToken}`,
+    ...(session?.accessToken
+      ? { Authorization: `Bearer ${session.accessToken}` }
+      : {}),
+
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
+
     ...(options.headers || {}),
   };
 
@@ -20,15 +23,10 @@ export async function clientApiFetch(path, options = {}) {
     headers,
   });
 
-  const data = await res.json();
-
-  if (res.status === 401) {
-    await signOut({ callbackUrl: "/login" });
-    throw new Error("Session expired. Please login again.");
-  }
+  const data = await res.json().catch(() => null);
 
   if (!res.ok) {
-    throw new Error(data.message || "Request failed");
+    throw new Error(data?.message || "Request failed");
   }
 
   return data;

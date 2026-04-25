@@ -21,7 +21,7 @@ const Popup = dynamic(async () => (await import("react-leaflet")).Popup, {
   ssr: false,
 });
 
-function createIcon() {
+function createMarkerIcon(color) {
   if (typeof window === "undefined") return null;
 
   const L = require("leaflet");
@@ -32,10 +32,10 @@ function createIcon() {
       <div style="
         width: 20px;
         height: 20px;
-        background: #2563eb;
+        background: ${color};
         border: 4px solid white;
         border-radius: 999px;
-        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
       "></div>
     `,
     iconSize: [20, 20],
@@ -47,6 +47,7 @@ export default function ReportLocationMap({
   latitude,
   longitude,
   addressSnapshot,
+  officerLocation,
 }) {
   const lat = Number(latitude);
   const lng = Number(longitude);
@@ -59,7 +60,19 @@ export default function ReportLocationMap({
     lng >= -180 &&
     lng <= 180;
 
-  const markerIcon = useMemo(() => createIcon(), []);
+  const reportIcon = useMemo(() => createMarkerIcon("#2563eb"), []);
+  const officerIcon = useMemo(() => createMarkerIcon("#16a34a"), []);
+
+  const officerLat = Number(officerLocation?.latitude);
+  const officerLng = Number(officerLocation?.longitude);
+
+  const hasOfficerLocation =
+    Number.isFinite(officerLat) &&
+    Number.isFinite(officerLng) &&
+    officerLat >= -90 &&
+    officerLat <= 90 &&
+    officerLng >= -180 &&
+    officerLng <= 180;
 
   if (!isValid) {
     return (
@@ -83,11 +96,11 @@ export default function ReportLocationMap({
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
 
-          <Marker position={[lat, lng]} icon={markerIcon}>
+          <Marker position={[lat, lng]} icon={reportIcon}>
             <Popup>
               <div className="space-y-1">
                 <p className="m-0 text-sm font-semibold text-slate-800">
-                  Titik Laporan
+                  Report Location
                 </p>
                 <p className="m-0 text-xs text-slate-500">
                   {addressSnapshot || "Alamat tidak tersedia"}
@@ -98,6 +111,21 @@ export default function ReportLocationMap({
               </div>
             </Popup>
           </Marker>
+
+          {hasOfficerLocation ? (
+            <Marker position={[officerLat, officerLng]} icon={officerIcon}>
+              <Popup>
+                <div className="space-y-1">
+                  <p className="m-0 text-sm font-semibold text-slate-800">
+                    Officer Live Location
+                  </p>
+                  <p className="m-0 text-xs text-slate-500">
+                    {officerLat}, {officerLng}
+                  </p>
+                </div>
+              </Popup>
+            </Marker>
+          ) : null}
         </MapContainer>
       </div>
     </div>

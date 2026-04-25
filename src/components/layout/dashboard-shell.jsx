@@ -5,6 +5,7 @@ import { Layout } from "antd";
 import DashboardSidebar from "./dashboard-sidebar";
 import DashboardTopbar from "./dashboard-topbar";
 import DashboardPageHeader from "./dashboard-page-header";
+import DashboardRealtimeListener from "./dashboard-realtime-listener";
 
 const { Content } = Layout;
 
@@ -13,6 +14,8 @@ export default function DashboardShell({ user, children }) {
 
   return (
     <Layout className="min-h-screen bg-slate-100">
+      <DashboardRealtimeListener />
+
       <DashboardSidebar collapsed={collapsed} />
 
       <Layout>
